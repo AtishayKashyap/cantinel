@@ -100,13 +100,14 @@ def cmd_benchmark(a):
 
 def cmd_demo(a):
     from .live import demo
-    demo(a.attack, a.duration, a.speed, a.seed, color=not a.no_color)
+    demo(a.attack, a.duration, a.speed, a.seed, color=not a.no_color, verbose=a.verbose)
 
 
 def cmd_live(a):
     from .engine import Profile
     from .live import monitor_bus
-    monitor_bus(Profile.load(a.profile), a.interface, a.channel, a.bitrate, a.alerts, color=not a.no_color)
+    monitor_bus(Profile.load(a.profile), a.interface, a.channel, a.bitrate, a.alerts, color=not a.no_color,
+                verbose=a.verbose)
 
 
 def main(argv=None):
@@ -156,11 +157,12 @@ def main(argv=None):
     s.set_defaults(fn=cmd_benchmark)
 
     s = sub.add_parser("demo", help="live classroom demo on a virtual CAN bus")
-    s.add_argument("--attack", choices=ATTACK_KINDS + ["none"], default="spoof_gear")
+    s.add_argument("--attack", choices=ATTACK_KINDS + ["none"], default="masquerade")
     s.add_argument("--duration", type=float, default=40)
     s.add_argument("--speed", type=float, default=1.0, help="playback speed factor")
     s.add_argument("--seed", type=int, default=1)
     s.add_argument("--no-color", action="store_true")
+    s.add_argument("--verbose", action="store_true", help="also show low-severity notices")
     s.set_defaults(fn=cmd_demo)
 
     s = sub.add_parser("live", help="monitor a real CAN interface (python-can)")
@@ -170,6 +172,7 @@ def main(argv=None):
     s.add_argument("--bitrate", type=int)
     s.add_argument("--alerts")
     s.add_argument("--no-color", action="store_true")
+    s.add_argument("--verbose", action="store_true", help="also show low-severity notices")
     s.set_defaults(fn=cmd_live)
 
     a = p.parse_args(argv)

@@ -20,9 +20,10 @@ RED, YEL, GRN, DIM, BOLD, RST = "\033[31m", "\033[33m", "\033[32m", "\033[2m", "
 class Console:
     """Aggregates alerts so a flood does not scroll the terminal away."""
 
-    def __init__(self, every: float = 1.0, color: bool = True):
+    def __init__(self, every: float = 1.0, color: bool = True, verbose: bool = False):
         self.every = every
         self.color = color
+        self.verbose = verbose          # also print low-severity notices (slow drifts)
         self.last_print = None
         self.window = Counter()
         self.example = {}
@@ -41,9 +42,11 @@ class Console:
             self.flagged += 1
             self.win_flagged += 1
         for a in alerts:
+            self.total_alerts[a.kind] += 1
+            if a.severity == "low" and not self.verbose:
+                continue
             key = (a.can_id, a.kind)
             self.window[key] += 1
-            self.total_alerts[a.kind] += 1
             self.example.setdefault(key, a)
         if self.last_print is None:
             self.last_print = f.timestamp
@@ -71,7 +74,7 @@ class Console:
 
 
 def monitor_bus(profile: Profile, interface: str, channel: str, bitrate: int | None = None,
-                alerts_path: str | None = None, color: bool = True):
+                alerts_path: str | None = None, color: bool = True, verbose: bool = False):
     import json
 
     import can
@@ -80,7 +83,7 @@ def monitor_bus(profile: Profile, interface: str, channel: str, bitrate: int | N
     if bitrate:
         kw["bitrate"] = bitrate
     eng = Engine(profile)
-    con = Console(color=color)
+    con = Console(color=color, verbose=verbose)
     out = open(alerts_path, "a") if alerts_path else None
     print(f"CANtinel monitoring {interface}:{channel} - Ctrl+C to stop")
     with can.Bus(**kw) as bus:
@@ -101,8 +104,8 @@ def monitor_bus(profile: Profile, interface: str, channel: str, bitrate: int | N
     print(f"done - {con.frames:,} frames, {con.flagged:,} flagged, alerts: {dict(con.total_alerts)}")
 
 
-def demo(attack: str = "spoof_gear", duration: float = 40.0, speed: float = 1.0, seed: int = 1,
-         color: bool = True):
+def demo(attack: str = "masquerade", duration: float = 40.0, speed: float = 1.0, seed: int = 1,
+         color: bool = True, verbose: bool = False):
     from .simulator import simulate
 
     print("1) learning the vehicle (simulated 180 s drive + 60 s validation drive)...")
@@ -113,7 +116,7 @@ def demo(attack: str = "spoof_gear", duration: float = 40.0, speed: float = 1.0,
     if atk:
         print(f"2) streaming a {duration:.0f} s capture; first '{attack}' burst starts at t={atk[0].timestamp:.1f}s")
     eng = Engine(prof)
-    con = Console(color=color)
+    con = Console(color=color, verbose=verbose)
     try:
         import can
         tx = can.Bus(interface="virtual", channel="cantinel-demo", preserve_timestamps=True)

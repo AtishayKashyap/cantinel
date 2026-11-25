@@ -85,7 +85,7 @@ pip install -e ".[dev]"                                  # numpy, scikit-learn, 
 
 pytest -q                                                # 21 tests
 python examples/quickstart.py                            # learn -> detect -> block -> authenticate
-cantinel demo --attack spoof_gear                        # live classroom demo on a virtual CAN bus
+cantinel demo --attack masquerade                        # live classroom demo on a virtual CAN bus
 ```
 
 ### Command line
