@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cantinel"
+version = "1.0.0"
+description = "Open, explainable intrusion detection & prevention for in-vehicle CAN networks (timing + payload + SecOC-lite)"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Atishay Kashyap", email = "akashyap1_be23@thapar.edu" }]
+keywords = ["CAN bus", "automotive security", "intrusion detection", "SecOC", "ISO 21434", "UN R155", "AIS-189"]
+dependencies = [
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "cryptography>=41",
+]
+
+[project.urls]
+Homepage = "https://github.com/AtishayKashyap/cantinel"
+
+[project.optional-dependencies]
+live = ["python-can>=4.3"]
+plots = ["matplotlib>=3.7"]
+dev = ["pytest>=7", "matplotlib>=3.7", "python-can>=4.3"]
+
+[project.scripts]
+cantinel = "cantinel.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cantinel*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
